@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { BarChart3, Search, RefreshCw, Filter, ChevronDown, Check } from 'lucide-react'
+import { BarChart3, Search, RefreshCw, Filter, ChevronDown, Check, TrendingDown } from 'lucide-react'
 import { RevenueBarChart } from '@/components/charts/revenue-bar-chart'
 import { DistributionDonut } from '@/components/charts/distribution-donut'
 
@@ -23,6 +23,9 @@ export default function AnalyzerPage() {
     const [searchTerm, setSearchTerm] = useState('')
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
+
+    // Underperforming State
+    const [performanceThreshold, setPerformanceThreshold] = useState<number>(1000)
 
     const supabase = createClient()
 
@@ -62,6 +65,25 @@ export default function AnalyzerPage() {
     const filteredOpportunities = opportunities.filter(o =>
         selectedCountry === 'ALL' || filteredAccountIds.has(o.account_id)
     )
+
+    // Underperforming Logic
+    const accountSalesTotals = salesRecords.reduce((acc, record) => {
+        const amount = Number(record.amount) || 0
+        acc[record.account_id] = (acc[record.account_id] || 0) + amount
+        return acc
+    }, {} as Record<string, number>)
+
+    const underperformingAccounts = filteredAccounts
+        .map(account => {
+            const total = accountSalesTotals[account.id] || 0
+            return {
+                ...account,
+                totalSales: total,
+                deficit: performanceThreshold - total
+            }
+        })
+        .filter(account => account.totalSales < performanceThreshold)
+        .sort((a, b) => b.deficit - a.deficit)
 
     // Inspector Logic
     const selectedAccountData = inspectorAccountId
@@ -285,6 +307,73 @@ export default function AnalyzerPage() {
                         Selecciona una cuenta para ver detalles
                     </p>
                 )}
+            </div>
+
+            {/* Underperforming Accounts Widget */}
+            <div className="backdrop-blur-xl bg-red-950/10 border border-red-900/30 rounded-2xl p-6 relative z-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h2 className="text-lg font-semibold text-red-200 flex items-center gap-2">
+                            <TrendingDown className="h-6 w-6 text-red-400" />
+                            Cuentas con Bajo Desempeño
+                        </h2>
+                        <p className="text-red-400/60 text-sm mt-1">
+                            Clientes por debajo del umbral de ventas anuales.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-slate-900/50 p-2 rounded-xl border border-red-900/30">
+                        <span className="text-slate-400 text-sm pl-2">Menos de: $</span>
+                        <input
+                            type="number"
+                            value={performanceThreshold}
+                            onChange={(e) => setPerformanceThreshold(Number(e.target.value))}
+                            className="bg-transparent text-white font-mono w-24 focus:outline-none"
+                        />
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="border-b border-red-900/30">
+                                <th className="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
+                                <th className="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Venta Total (Año)</th>
+                                <th className="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Déficit</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-red-900/10">
+                            {underperformingAccounts.length > 0 ? (
+                                underperformingAccounts.map((account) => (
+                                    <tr key={account.id} className="group hover:bg-red-900/5 transition-colors">
+                                        <td className="py-4 text-sm font-medium text-slate-200 group-hover:text-white">
+                                            {account.name}
+                                            <span className="ml-2 text-xs text-slate-500 font-normal">{account.country}</span>
+                                        </td>
+                                        <td className="py-4 text-sm text-slate-400 text-right font-mono">
+                                            USD {account.totalSales.toLocaleString()}
+                                        </td>
+                                        <td className="py-4 text-sm text-red-400 text-right font-mono">
+                                            -USD {account.deficit.toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={3} className="py-8 text-center text-slate-500 italic">
+                                        ¡Excelente! No hay cuentas por debajo del umbral de ${performanceThreshold.toLocaleString()}
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="mt-4 text-right">
+                    <span className="text-xs text-slate-500">
+                        Mostrando {underperformingAccounts.length} cuentas
+                    </span>
+                </div>
             </div>
 
             <div className="border-t border-slate-800 my-8 relative z-0"></div>
