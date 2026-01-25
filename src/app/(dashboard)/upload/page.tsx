@@ -435,7 +435,10 @@ export default function UploadPage() {
         // Formato con slash: detectar si es M/D/YY, M/D/YYYY, D/M/YY, D/M/YYYY
         const slashParts = dateStr.split('/')
         if (slashParts.length === 3) {
-            let [first, second, third] = slashParts.map(p => parseInt(p, 10))
+            const parts = slashParts.map(p => parseInt(p, 10))
+            const first = parts[0]
+            const second = parts[1]
+            let third = parts[2]
 
             // Expandir año de 2 dígitos a 4 dígitos
             if (third < 100) {
