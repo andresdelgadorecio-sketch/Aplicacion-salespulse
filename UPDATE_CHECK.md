@@ -1,6 +1,6 @@
-# Verificación de Autenticación (Secret) 🔐
-**Hora:** 11:00 AM
-**Prueba:** Webhook con secreto configurado (`salespulse2026`).
+# Verificación de Webhook Directo (API) ⚡
+**Hora:** 11:10 AM
+**Método:** URL de despliegue directo (/api/v1/deploy).
 
-Si este cambio aparece en Coolify automáticamente, la seguridad y la automatización están completas.
-¡CI/CD Operativo!
+Esta es la prueba definitiva. GitHub tocará la API de Coolify directamente.
+Si esto no lo dispara, nada lo hará. (Pero funcionará).
