@@ -7,12 +7,12 @@ export function calculateWeightedForecast(opportunities: Opportunity[]): Forecas
     const activeOpportunities = opportunities.filter(opp => opp.status === 'Active')
 
     const weightedForecast = activeOpportunities.reduce(
-        (sum, opp) => sum + (opp.total_amount * opp.probability / 100),
+        (sum, opp) => sum + (opp.amount * opp.probability / 100),
         0
     )
 
     const totalPipeline = activeOpportunities.reduce(
-        (sum, opp) => sum + opp.total_amount,
+        (sum, opp) => sum + opp.amount,
         0
     )
 
@@ -115,7 +115,7 @@ export function getMonthlyComparison(
         })
 
         const forecast = periodOpps.reduce(
-            (sum, opp) => sum + (opp.total_amount * opp.probability / 100),
+            (sum, opp) => sum + (opp.amount * opp.probability / 100),
             0
         )
 

@@ -35,7 +35,7 @@ export default function AnalyzerPage() {
             const [oppsRes, acctsRes, salesRes] = await Promise.all([
                 supabase.from('opportunities').select('*'),
                 supabase.from('accounts').select('*'),
-                supabase.from('sales_records').select('*'),
+                supabase.from('sales_records').select('*, product:products(*)'),
             ])
             setOpportunities(oppsRes.data || [])
             setAccounts(acctsRes.data || [])
@@ -265,7 +265,7 @@ export default function AnalyzerPage() {
                 {/* Results - Keep z-index normal */}
                 {inspectorAccountId ? (
                     <div className="mt-8 pt-8 border-t border-slate-800 animate-in fade-in slide-in-from-top-4 duration-500 relative z-0">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                             <div className="lg:col-span-1 space-y-4">
                                 <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
                                     <p className="text-slate-400 text-sm mb-2">Progreso vs Meta</p>
@@ -299,6 +299,51 @@ export default function AnalyzerPage() {
                                 <div className="h-[200px]">
                                     <RevenueBarChart data={inspectorChartData} minimal />
                                 </div>
+                            </div>
+
+                            {/* New Category Chart */}
+                            <div className="lg:col-span-1">
+                                {(() => {
+                                    const accountSalesByCategory = accountSales.reduce((acc, record) => {
+                                        const category = record.product?.category || 'General'
+                                        const amount = Number(record.amount) || 0
+                                        acc[category] = (acc[category] || 0) + amount
+                                        return acc
+                                    }, {} as Record<string, number>)
+
+                                    // Sort and Group small categories
+                                    let entries = Object.entries(accountSalesByCategory).sort((a, b) => (b[1] as number) - (a[1] as number))
+
+                                    const topEntries = entries.slice(0, 5)
+                                    const otherEntries = entries.slice(5)
+
+                                    if (otherEntries.length > 0) {
+                                        const otherTotal = otherEntries.reduce((sum, [, val]) => sum + (val as number), 0)
+                                        topEntries.push(['Otros', otherTotal])
+                                    }
+
+                                    const inspectorProductDistribution = topEntries.map(([name, value], idx) => ({
+                                        name,
+                                        value: value as number,
+                                        color: name === 'Otros' ? '#94a3b8' : [
+                                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
+                                        ][idx % 6]
+                                    }))
+
+                                    return (
+                                        <div className="h-full bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 flex flex-col">
+                                            <h4 className="text-sm font-medium text-slate-300 mb-4 px-2">Ventas por Categoría</h4>
+                                            <div className="flex-1 min-h-0">
+                                                <DistributionDonut
+                                                    data={inspectorProductDistribution}
+                                                    centerLabel="Total"
+                                                    centerValue={`${(accountTotalSales / 1000).toFixed(0)}k`}
+                                                    layout="vertical"
+                                                />
+                                            </div>
+                                        </div>
+                                    )
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -402,7 +447,7 @@ export default function AnalyzerPage() {
                 </div>
             </div>
 
-            {/* Stats */}
+            {/* Stats Disabled per user request
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
                     <p className="text-slate-400 text-sm mb-1">Cuentas</p>
@@ -415,18 +460,20 @@ export default function AnalyzerPage() {
                 <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
                     <p className="text-slate-400 text-sm mb-1">Pipeline Total</p>
                     <p className="text-3xl font-bold text-white">
-                        ${(filteredOpportunities.reduce((s, o) => s + (o.total_amount || 0), 0)).toLocaleString()}
+                        ${(filteredOpportunities.reduce((s, o) => s + (o.amount || 0), 0)).toLocaleString()}
                     </p>
                 </div>
+                
                 <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
                     <p className="text-slate-400 text-sm mb-1">Forecast Ponderado</p>
                     <p className="text-3xl font-bold text-white">
-                        ${(filteredOpportunities.reduce((s, o) => s + ((o.total_amount * o.probability / 100) || 0), 0)).toLocaleString()}
+                        ${(filteredOpportunities.reduce((s, o) => s + ((o.amount * o.probability / 100) || 0), 0)).toLocaleString()}
                     </p>
                 </div>
             </div>
+            */}
 
-            {/* Charts */}
+            {/* Charts Disabled per user request
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
                     <h3 className="text-lg font-semibold text-white mb-4">Visión General</h3>
@@ -440,39 +487,70 @@ export default function AnalyzerPage() {
                     centerValue={filteredAccounts.length || 0}
                 />
             </div>
+            */}
 
+            {/* Product & Pipeline Data Disabled per user request
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {(() => {
+                    const salesByCategory = salesRecords.reduce((acc, record) => {
+                        const category = record.product?.category || 'Otros Productos'
+                        const amount = Number(record.amount) || 0
+                        acc[category] = (acc[category] || 0) + amount
+                        return acc
+                    }, {} as Record<string, number>)
+
+                    const productDistribution = Object.entries(salesByCategory).map(([name, value], idx) => ({
+                        name,
+                        value: value as number,
+                        color: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+                        ][idx % 8]
+                    })).sort((a, b) => b.value - a.value).slice(0, 8) 
+
+                    const totalCategorySales = productDistribution.reduce((sum, d) => sum + d.value, 0)
+
+                    return (
+                        <DistributionDonut
+                            data={productDistribution}
+                            title="Ventas por Familia de Productos"
+                            centerLabel="Total"
+                            centerValue={`$${(totalCategorySales / 1000).toFixed(0)}k`}
+                        />
+                    )
+                })()}
+
                 <DistributionDonut
                     data={pipelineDistribution}
                     title="Estado del Pipeline"
                     centerLabel="Opps"
                     centerValue={filteredOpportunities.length || 0}
                 />
+            </div>
+            */}
 
-                {/* Accounts List */}
-                <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">
-                        Cuentas {selectedCountry !== 'ALL' ? `en ${selectedCountry}` : ''}
-                    </h3>
+            {/* Accounts List */}
+            <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                    Cuentas {selectedCountry !== 'ALL' ? `en ${selectedCountry}` : ''}
+                </h3>
 
-                    <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-                        {filteredAccounts.map((account, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-colors">
-                                <div>
-                                    <p className="text-white font-medium">{account.name}</p>
-                                    <p className="text-slate-500 text-sm">{account.country}</p>
-                                </div>
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${account.status === 'Growth'
-                                    ? 'bg-emerald-500/20 text-emerald-400'
-                                    : account.status === 'Risk'
-                                        ? 'bg-red-500/20 text-red-400'
-                                        : 'bg-slate-700 text-slate-300'
-                                    }`}>
-                                    {account.status}
-                                </span>
+                <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
+                    {filteredAccounts.map((account, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-colors">
+                            <div>
+                                <p className="text-white font-medium">{account.name}</p>
+                                <p className="text-slate-500 text-sm">{account.country}</p>
                             </div>
-                        ))}
-                    </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${account.status === 'Growth'
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : account.status === 'Risk'
+                                    ? 'bg-red-500/20 text-red-400'
+                                    : 'bg-slate-700 text-slate-300'
+                                }`}>
+                                {account.status}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

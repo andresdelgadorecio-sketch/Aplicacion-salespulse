@@ -17,6 +17,7 @@ import { useState } from 'react'
 
 const navItems = [
     { href: '/summary', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/opportunities', icon: TrendingUp, label: 'Oportunidades' },
     { href: '/risks', icon: AlertTriangle, label: 'Riesgos' },
     { href: '/analyzer', icon: BarChart3, label: 'Analizador' },
     { href: '/upload', icon: Upload, label: 'Cargar Datos' },
@@ -65,8 +66,8 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-                                    ? 'bg-indigo-500/20 text-indigo-400'
-                                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                ? 'bg-indigo-500/20 text-indigo-400'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                                 }`}
                         >
                             <item.icon

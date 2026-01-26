@@ -9,7 +9,7 @@ const STALLED_DAYS_THRESHOLD = 30
  * Detecta si una oportunidad tiene alto valor y baja probabilidad
  */
 function isHighValueLowProb(opp: Opportunity): boolean {
-    return opp.total_amount > HIGH_VALUE_THRESHOLD && opp.probability < LOW_PROBABILITY_THRESHOLD
+    return opp.amount > HIGH_VALUE_THRESHOLD && opp.probability < LOW_PROBABILITY_THRESHOLD
 }
 
 /**
@@ -30,36 +30,26 @@ function isConcentration(
 
     if (!target || target.target_amount === 0) return false
 
-    return opp.total_amount > target.target_amount * CONCENTRATION_THRESHOLD
-}
-
-/**
- * Detecta si una oportunidad está estancada (sin cambios en > 30 días)
- */
-function isStalled(opp: Opportunity): boolean {
-    const createdDate = new Date(opp.created_at)
-    const daysSinceCreation = Math.floor(
-        (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24)
-    )
-
-    // Si no hay campo de "última actualización", usamos la fecha de creación
-    return daysSinceCreation > STALLED_DAYS_THRESHOLD
+    return opp.amount > target.target_amount * CONCENTRATION_THRESHOLD
 }
 
 /**
  * Calcula el puntaje de riesgo de una oportunidad (0-100)
  */
-function calculateRiskScore(risks: RiskTag[], opp: Opportunity): number {
+function calculateRiskScore(risks: string[], opp: Opportunity): number {
     let score = 0
 
-    if (risks.includes('High Value / Low Prob')) {
+    if (risks.includes('LARGE_LOW_PROB') || risks.includes('High Value / Low Prob')) {
         score += 40
     }
-    if (risks.includes('Concentration')) {
+    if (risks.includes('PI_CONCENTRATION') || risks.includes('Concentration')) {
         score += 35
     }
     if (risks.includes('Stalled')) {
         score += 25
+    }
+    if (risks.includes('COMMITTED_NO_PO')) {
+        score += 30
     }
 
     // Ajuste por probabilidad baja
@@ -78,78 +68,72 @@ export function assessOpportunityRisk(
     targets: AOPTarget[] = [],
     countryForAccount?: string
 ): AtRiskOpportunity {
-    const riskReasons: RiskTag[] = []
+    // If we have pre-calculated alerts from import, use them
+    let riskReasons: string[] = opp.alerts ? [...opp.alerts] : []
 
-    if (isHighValueLowProb(opp)) {
+    // Runtime check for High Value / Low Prob
+    if (isHighValueLowProb(opp) && !riskReasons.includes('High Value / Low Prob') && !riskReasons.includes('LARGE_LOW_PROB')) {
         riskReasons.push('High Value / Low Prob')
     }
 
+    // Runtime check for Concentration
     if (isConcentration(opp, targets, countryForAccount)) {
-        riskReasons.push('Concentration')
-    }
-
-    if (isStalled(opp)) {
-        riskReasons.push('Stalled')
+        if (!riskReasons.includes('Concentration')) riskReasons.push('Concentration')
     }
 
     return {
         ...opp,
         riskScore: calculateRiskScore(riskReasons, opp),
-        riskReasons,
+        riskReasons: riskReasons as RiskTag[],
+        alerts: riskReasons
     }
 }
 
 /**
- * Obtiene todas las oportunidades en riesgo, ordenadas por puntaje
+ * Obtiene todas las oportunidades en riesgo
  */
 export function getAtRiskOpportunities(
     opportunities: Opportunity[],
-    targets: AOPTarget[] = [],
-    accountCountryMap: Record<string, string> = {}
+    targets: AOPTarget[],
+    accountCountryMap: Record<string, string>
 ): AtRiskOpportunity[] {
-    const assessed = opportunities
-        .filter(opp => opp.status === 'Active')
+    return opportunities
         .map(opp => assessOpportunityRisk(opp, targets, accountCountryMap[opp.account_id]))
-        .filter(opp => opp.riskReasons.length > 0)
+        .filter(opp => opp.riskScore > 0 || (opp.riskReasons && opp.riskReasons.length > 0))
         .sort((a, b) => b.riskScore - a.riskScore)
-
-    return assessed
 }
 
 /**
- * Agrupa oportunidades en riesgo por tipo de riesgo
+ * Agrupa las oportunidades por tipo de riesgo
  */
-export function groupByRiskType(
-    atRiskOpportunities: AtRiskOpportunity[]
-): Record<RiskTag, AtRiskOpportunity[]> {
-    const grouped: Record<RiskTag, AtRiskOpportunity[]> = {
-        'High Value / Low Prob': [],
-        'Concentration': [],
-        'Stalled': [],
-    }
+export function groupByRiskType(opportunities: AtRiskOpportunity[]): Record<string, AtRiskOpportunity[]> {
+    const grouped: Record<string, AtRiskOpportunity[]> = {}
 
-    atRiskOpportunities.forEach(opp => {
-        opp.riskReasons.forEach(reason => {
-            grouped[reason].push(opp)
-        })
+    opportunities.forEach(opp => {
+        if (opp.riskReasons) {
+            opp.riskReasons.forEach(reason => {
+                // Normalize reason tags if needed, but keeping simple for now
+                if (!grouped[reason]) {
+                    grouped[reason] = []
+                }
+                grouped[reason].push(opp)
+            })
+        }
     })
 
     return grouped
 }
 
-/**
- * Obtiene estadísticas de riesgo del pipeline
- */
 export function getRiskStats(opportunities: Opportunity[]): {
     totalAtRisk: number
     highRiskAmount: number
     riskPercentage: number
 } {
-    const atRisk = getAtRiskOpportunities(opportunities)
+    const atRisk = opportunities.filter(o => o.alerts && o.alerts.length > 0)
     const totalActive = opportunities.filter(o => o.status === 'Active')
 
-    const highRiskAmount = atRisk.reduce((sum, opp) => sum + opp.total_amount, 0)
-    const totalAmount = totalActive.reduce((sum, opp) => sum + opp.total_amount, 0)
+    const highRiskAmount = atRisk.reduce((sum, opp) => sum + opp.amount, 0)
+    const totalAmount = totalActive.reduce((sum, opp) => sum + opp.amount, 0)
 
     return {
         totalAtRisk: atRisk.length,

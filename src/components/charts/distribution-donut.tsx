@@ -17,7 +17,9 @@ interface DistributionDonutProps {
     title?: string
     centerLabel?: string
     centerValue?: string | number
+    layout?: 'horizontal' | 'vertical'
 }
+
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -39,6 +41,7 @@ export function DistributionDonut({
     title,
     centerLabel,
     centerValue,
+    layout = 'horizontal'
 }: DistributionDonutProps) {
     const total = data.reduce((sum, item) => sum + item.value, 0)
 
@@ -48,12 +51,12 @@ export function DistributionDonut({
     }))
 
     return (
-        <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+        <div className={`backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6 h-full flex flex-col`}>
             {title && (
                 <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
             )}
 
-            <div className="flex items-center gap-6">
+            <div className={`flex flex-1 ${layout === 'vertical' ? 'flex-col items-center justify-center' : 'items-center'} gap-6 min-h-0`}>
                 {/* Donut Chart */}
                 <div className="relative h-48 w-48 flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
@@ -89,7 +92,7 @@ export function DistributionDonut({
                 </div>
 
                 {/* Legend */}
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                     {dataWithPercentage.map((item, index) => (
                         <div key={index} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">

@@ -29,10 +29,10 @@ export default async function RisksPage() {
 
     // Datos de ejemplo si no hay datos reales
     const exampleRisks = opps.length === 0 ? [
-        { id: '1', name: 'Mega Proyecto TechCorp', total_amount: 150000, probability: 35, riskScore: 75, riskReasons: ['High Value / Low Prob'] },
-        { id: '2', name: 'Contrato Único Nacional', total_amount: 280000, probability: 55, riskScore: 60, riskReasons: ['Concentration'] },
-        { id: '3', name: 'Renovación Legacy', total_amount: 45000, probability: 70, riskScore: 45, riskReasons: ['Stalled'] },
-        { id: '4', name: 'Expansión Regional', total_amount: 95000, probability: 40, riskScore: 55, riskReasons: ['High Value / Low Prob', 'Stalled'] },
+        { id: '1', name: 'Mega Proyecto TechCorp', amount: 150000, probability: 35, riskScore: 75, riskReasons: ['High Value / Low Prob'] },
+        { id: '2', name: 'Contrato Único Nacional', amount: 280000, probability: 55, riskScore: 60, riskReasons: ['Concentration'] },
+        { id: '3', name: 'Renovación Legacy', amount: 45000, probability: 70, riskScore: 45, riskReasons: ['Stalled'] },
+        { id: '4', name: 'Expansión Regional', amount: 95000, probability: 40, riskScore: 55, riskReasons: ['High Value / Low Prob', 'Stalled'] },
     ] : atRiskOpportunities
 
     const getRiskIcon = (reason: string) => {
@@ -126,7 +126,7 @@ export default async function RisksPage() {
 
                                     <div className="flex items-center gap-6 text-sm">
                                         <span className="text-slate-300">
-                                            <span className="text-slate-500">Monto:</span> ${opp.total_amount.toLocaleString()}
+                                            <span className="text-slate-500">Monto:</span> ${opp.amount?.toLocaleString() || 0}
                                         </span>
                                         <span className="text-slate-300">
                                             <span className="text-slate-500">Probabilidad:</span> {opp.probability}%

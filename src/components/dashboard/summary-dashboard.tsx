@@ -6,14 +6,20 @@ import { DollarSign, TrendingUp, AlertTriangle, Target } from 'lucide-react'
 import { KPICard } from '@/components/kpi/kpi-card'
 import { RevenueBarChart } from '@/components/charts/revenue-bar-chart'
 import { DistributionDonut } from '@/components/charts/distribution-donut'
+import { ProductMixChart } from '@/components/charts/product-mix-chart'
+import { BusinessUnitRow } from '@/components/dashboard/business-unit-row'
+import { DistributionCharts } from '@/components/dashboard/distribution-charts'
 import { PeriodSelector } from '@/components/ui/period-selector'
 import { calculateWeightedForecast, calculateGapAnalysis } from '@/lib/logic/forecast-engine'
 import { getRiskStats } from '@/lib/logic/risk-engine'
 
 function formatCurrency(value: number): string {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}k`
-    return `$${value.toFixed(2)}`
+    const absValue = Math.abs(value)
+    const sign = value < 0 ? '-' : ''
+
+    if (absValue >= 1000000) return `${sign}$${(absValue / 1000000).toFixed(2)}M`
+    if (absValue >= 1000) return `${sign}$${(absValue / 1000).toFixed(1)}k`
+    return `${sign}$${absValue.toFixed(2)}`
 }
 
 interface DashboardData {
@@ -49,7 +55,7 @@ export function SummaryDashboard() {
             ] = await Promise.all([
                 supabase.from('opportunities').select('*'),
                 supabase.from('sales_records')
-                    .select('*')
+                    .select('*, product:products!left(*)')
                     .gte('sale_date', period.start)
                     .lte('sale_date', period.end),
                 supabase.from('aop_targets').select('*'),
@@ -81,13 +87,19 @@ export function SummaryDashboard() {
 
     const forecastResult = calculateWeightedForecast(opps)
     const currentSales = sales.reduce((sum, s) => sum + (s.amount || 0), 0)
+    // Calucate Total Period Target (Sum of AOP targets within selected period)
+    const totalPeriodTarget = targets
+        .filter(t => t.month_period >= period.start && t.month_period <= period.end)
+        .reduce((sum, t) => sum + (parseFloat(t.target_amount) || 0), 0)
+
+    // Current Month Target (for fallback in Chart)
     const currentMonthTarget = targets.find(t => {
         const now = new Date()
         const periodStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
         return t.month_period === periodStr
     })?.target_amount || 0
 
-    const gapAnalysis = calculateGapAnalysis(currentSales, forecastResult.weightedForecast, currentMonthTarget)
+    const gapAnalysis = calculateGapAnalysis(currentSales, forecastResult.weightedForecast, totalPeriodTarget)
     const riskStats = getRiskStats(opps)
 
     // Agrupar ventas por mes para el gráfico (usando índice numérico del mes)
@@ -256,6 +268,32 @@ export function SummaryDashboard() {
                         </div>
                     </div>
 
+                    {/* Global Product Mix Row */}
+                    <div className="grid grid-cols-1">
+                        {(() => {
+                            const salesByCategory = sales.reduce((acc, record) => {
+                                const category = record.product?.category || 'Otros Productos'
+                                const amount = Number(record.amount) || 0
+                                acc[category] = (acc[category] || 0) + amount
+                                return acc
+                            }, {} as Record<string, number>)
+
+                            const mixData = Object.entries(salesByCategory)
+                                .map(([name, value]) => ({ name, value: value as number }))
+                                .sort((a, b) => b.value - a.value)
+
+                            return (
+                                <ProductMixChart data={mixData} />
+                            )
+                        })()}
+                    </div>
+
+                    {/* Distribution Charts Row Two (Top 7 + Others) */}
+                    <DistributionCharts sales={sales} />
+
+                    {/* Business Unit Distribution Row */}
+                    <BusinessUnitRow sales={sales} />
+
                     {/* Bottom Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Recent Opportunities */}
@@ -265,9 +303,9 @@ export function SummaryDashboard() {
                             </div>
                             <div className="space-y-4">
                                 {(opps.slice(0, 5).length > 0 ? opps.slice(0, 5) : [
-                                    { name: 'Proyecto Alpha', total_amount: 85000, probability: 75 },
-                                    { name: 'Contrato Beta', total_amount: 120000, probability: 45 },
-                                    { name: 'Expansión Gamma', total_amount: 65000, probability: 90 },
+                                    { name: 'Proyecto Alpha', amount: 85000, probability: 75 },
+                                    { name: 'Contrato Beta', amount: 120000, probability: 45 },
+                                    { name: 'Expansión Gamma', amount: 65000, probability: 90 },
                                 ]).map((opp, index) => (
                                     <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl">
                                         <div className="flex items-center gap-4">
@@ -279,7 +317,7 @@ export function SummaryDashboard() {
                                                 <p className="text-slate-400 text-sm">{opp.probability}% probabilidad</p>
                                             </div>
                                         </div>
-                                        <p className="text-white font-semibold">${(opp.total_amount).toLocaleString()}</p>
+                                        <p className="text-white font-semibold">${(opp.amount || 0).toLocaleString()}</p>
                                     </div>
                                 ))}
                             </div>
@@ -288,32 +326,53 @@ export function SummaryDashboard() {
                         {/* Top Accounts */}
                         <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-semibold text-white">Cuentas Top</h3>
+                                <h3 className="text-lg font-semibold text-white">Cuentas Top 10 (Por Ventas)</h3>
                             </div>
                             <div className="space-y-4">
-                                {(accts.slice(0, 4).length > 0 ? accts.slice(0, 4) : [
-                                    { name: 'TechCorp Colombia', country: 'COLOMBIA', status: 'Growth' },
-                                    { name: 'InnovaEC', country: 'ECUADOR', status: 'Stable' },
-                                    { name: 'PeruSoft', country: 'PERU', status: 'Growth' },
-                                ]).map((account, index) => (
-                                    <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                                                <span className="text-emerald-400 font-bold text-sm">{account.name.charAt(0)}</span>
+                                {(() => {
+                                    // Calculate sales per account
+                                    const accountSalesMap = sales.reduce((acc, sale) => {
+                                        acc[sale.account_id] = (acc[sale.account_id] || 0) + (sale.amount || 0)
+                                        return acc
+                                    }, {} as Record<string, number>)
+
+                                    // Merge, sort and slice
+                                    const topAccounts = accts.map(account => ({
+                                        ...account,
+                                        totalSales: accountSalesMap[account.id] || 0
+                                    }))
+                                        .filter(a => a.totalSales > 0) // Only show active accounts
+                                        .sort((a, b) => b.totalSales - a.totalSales)
+                                        .slice(0, 10)
+
+                                    return topAccounts.length > 0 ? topAccounts.map((account, index) => (
+                                        <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 rounded-xl bg-emerald-500/20 flex items-center justify-center font-bold text-emerald-400">
+                                                    {index + 1}
+                                                </div>
+                                                <div>
+                                                    <p className="text-white font-medium">{account.name}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-slate-400 text-sm">{account.country}</span>
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${account.status === 'Growth' ? 'bg-emerald-500/10 text-emerald-400' :
+                                                            account.status === 'Risk' ? 'bg-red-500/10 text-red-400' :
+                                                                'bg-slate-700 text-slate-300'
+                                                            }`}>
+                                                            {account.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-white font-medium">{account.name}</p>
-                                                <p className="text-slate-400 text-sm">{account.country}</p>
+                                            <div className="text-right">
+                                                <p className="text-white font-semibold">{formatCurrency(account.totalSales)}</p>
+                                                <p className="text-xs text-slate-500">Ventas Totales</p>
                                             </div>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${account.status === 'Growth' ? 'bg-emerald-500/20 text-emerald-400' :
-                                            account.status === 'Risk' ? 'bg-red-500/20 text-red-400' :
-                                                'bg-slate-700 text-slate-300'
-                                            }`}>
-                                            {account.status}
-                                        </span>
-                                    </div>
-                                ))}
+                                    )) : (
+                                        <p className="text-slate-500 text-center py-4">No hay ventas registradas en este período</p>
+                                    )
+                                })()}
                             </div>
                         </div>
                     </div>

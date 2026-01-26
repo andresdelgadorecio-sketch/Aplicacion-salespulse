@@ -3,7 +3,7 @@ export type UserRole = 'admin' | 'analyst';
 export type AccountStatus = 'Growth' | 'Risk' | 'Stable';
 export type OpportunityStatus = 'Active' | 'Closed Won' | 'Closed Lost';
 export type PlanType = 'Free' | 'Pro' | 'Enterprise';
-export type Country = 'COLOMBIA' | 'ECUADOR' | 'PERU';
+export type Country = 'COLOMBIA' | 'ECUADOR' | 'PERU' | 'General' | 'Unknown';
 
 export interface Profile {
     id: string;
@@ -32,12 +32,17 @@ export interface Opportunity {
     id: string;
     name: string;
     account_id: string;
-    total_amount: number;
+    amount: number;
     probability: number;
     weighted_amount: number; // Campo calculado
+    alerts?: string[]; // Array de alertas de riesgo
+    pi_number?: string;
+    po_number?: string;
     close_date: string;
-    risk_tags: string[];
+    risk_tags: string[]; // Deprecated? Or keeping for backward comp.
+    stage: string; // Forecast Category
     status: OpportunityStatus;
+    country: string; // From Account or direct
     created_at: string;
     // Relaciones
     account?: Account;
