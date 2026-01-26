@@ -312,7 +312,7 @@ export default function AnalyzerPage() {
                                     }, {} as Record<string, number>)
 
                                     // Sort and Group small categories
-                                    let entries = Object.entries(accountSalesByCategory).sort((a, b) => (b[1] as number) - (a[1] as number))
+                                    const entries = Object.entries(accountSalesByCategory).sort((a, b) => (b[1] as number) - (a[1] as number))
 
                                     const topEntries = entries.slice(0, 5)
                                     const otherEntries = entries.slice(5)

@@ -69,7 +69,7 @@ export function assessOpportunityRisk(
     countryForAccount?: string
 ): AtRiskOpportunity {
     // If we have pre-calculated alerts from import, use them
-    let riskReasons: string[] = opp.alerts ? [...opp.alerts] : []
+    const riskReasons: string[] = opp.alerts ? [...opp.alerts] : []
 
     // Runtime check for High Value / Low Prob
     if (isHighValueLowProb(opp) && !riskReasons.includes('High Value / Low Prob') && !riskReasons.includes('LARGE_LOW_PROB')) {
