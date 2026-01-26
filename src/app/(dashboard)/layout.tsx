@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/sidebar'
+import { AIChatWidget } from '@/components/dashboard/ai-chat-widget'
 
 export default function DashboardLayout({
     children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
                     {children}
                 </div>
             </main>
+            <AIChatWidget />
         </div>
     )
 }
