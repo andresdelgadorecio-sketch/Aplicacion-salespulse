@@ -22,6 +22,7 @@ export function AIChatWidget() {
     ])
     const [inputValue, setInputValue] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const sessionId = useRef(`session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     const scrollToBottom = () => {
@@ -53,7 +54,10 @@ export function AIChatWidget() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: userMessage.content }),
+                body: JSON.stringify({
+                    message: userMessage.content,
+                    sessionId: sessionId.current
+                }),
             })
 
             let data
@@ -145,8 +149,8 @@ export function AIChatWidget() {
                                 className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                             >
                                 <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${msg.role === 'assistant'
-                                        ? 'bg-indigo-600/20 border border-indigo-500/30'
-                                        : 'bg-slate-700/50 border border-slate-600/30'
+                                    ? 'bg-indigo-600/20 border border-indigo-500/30'
+                                    : 'bg-slate-700/50 border border-slate-600/30'
                                     }`}>
                                     {msg.role === 'assistant' ? (
                                         <Bot className="h-4 w-4 text-indigo-400" />
@@ -155,8 +159,8 @@ export function AIChatWidget() {
                                     )}
                                 </div>
                                 <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${msg.role === 'user'
-                                        ? 'bg-indigo-600 text-white rounded-br-none'
-                                        : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-bl-none'
+                                    ? 'bg-indigo-600 text-white rounded-br-none'
+                                    : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-bl-none'
                                     }`}>
                                     {msg.content}
                                     <span className="block text-[10px] opacity-50 mt-1">
