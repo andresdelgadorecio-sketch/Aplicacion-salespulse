@@ -1,5 +1,5 @@
 // Tipos de base de datos
-export type UserRole = 'admin' | 'analyst';
+export type UserRole = 'admin' | 'commercial' | 'supervisor';
 export type AccountStatus = 'Growth' | 'Risk' | 'Stable';
 export type OpportunityStatus = 'Active' | 'Closed Won' | 'Closed Lost';
 export type PlanType = 'Free' | 'Pro' | 'Enterprise';

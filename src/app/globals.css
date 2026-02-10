@@ -49,3 +49,109 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Accessibility Utilities */
+
+/* 1. Visible Focus */
+:focus-visible {
+  outline: 3px solid #FFB800 !important;
+  /* Yellow for high contrast */
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 2. Pause Animations */
+body.a11y-paused *,
+body.a11y-paused *::before,
+body.a11y-paused *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* 3. Highlight Links */
+body.a11y-highlight-links a {
+  text-decoration: underline !important;
+  text-decoration-color: #FAFAFA !important;
+  text-decoration-thickness: 2px !important;
+  font-weight: 700 !important;
+  color: #FAFAFA !important;
+  background-color: #0f172a !important;
+  /* Dark slate background */
+  padding: 0 2px;
+}
+
+body.a11y-highlight-links a:hover {
+  background-color: #FACC15 !important;
+  /* Yellow */
+  color: #000000 !important;
+}
+
+/* 4. Dyslexia Font - OpenDyslexic or similar fallback */
+body.a11y-font-dyslexia * {
+  font-family: "Comic Sans MS", "Chalkboard SE", "Comic Neue", sans-serif !important;
+  line-height: 1.8 !important;
+  letter-spacing: 0.05em !important;
+  word-spacing: 0.1em !important;
+}
+
+/* 5. Big Cursor */
+body.a11y-cursor-big,
+body.a11y-cursor-big * {
+  cursor: url('data:image/svg+xml;utf8,<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.00004 4.00003L22.6275 42.6275L27.3516 28.3516L40.0645 23.3633L6.00004 4.00003Z" fill="black" stroke="white" stroke-width="4"/><path d="M27.3516 28.3516L42 42" stroke="black" stroke-width="6"/><path d="M27.3516 28.3516L42 42" stroke="white" stroke-width="2"/></svg>') 4 4, auto !important;
+}
+
+/* 6. High Contrast Mode (Light text on very dark background) */
+body.a11y-contrast {
+  background-color: #000000 !important;
+  color: #FFFF00 !important;
+  /* Yellow text */
+}
+
+/* Force everything to black background and yellow text */
+body.a11y-contrast * {
+  background-color: #000000 !important;
+  color: #FFFF00 !important;
+  border-color: #FFFF00 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Specific elements need borders to be visible */
+body.a11y-contrast button,
+body.a11y-contrast a,
+body.a11y-contrast input,
+body.a11y-contrast select,
+body.a11y-contrast textarea,
+body.a11y-contrast [role="button"] {
+  border: 2px solid #FFFF00 !important;
+  background-color: #000000 !important;
+}
+
+/* Links should be underlined */
+body.a11y-contrast a {
+  text-decoration: underline !important;
+}
+
+/* Images and SVGs */
+body.a11y-contrast img,
+body.a11y-contrast video {
+  filter: grayscale(100%) contrast(120%) !important;
+  opacity: 0.8 !important;
+}
+
+body.a11y-contrast svg {
+  fill: #FFFF00 !important;
+  stroke: #FFFF00 !important;
+}
+
+/* Inputs need to be readable */
+body.a11y-contrast input::placeholder {
+  color: #FFFF00 !important;
+  opacity: 0.7;
+}
+
+/* 7. Text Scaling (controlled by JS style injection mostly, but helper here) */
+body.a11y-text-large {
+  font-size: 125% !important;
+}

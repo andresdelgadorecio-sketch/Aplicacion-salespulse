@@ -12,8 +12,10 @@ import {
     ChevronLeft,
     ChevronRight,
     TrendingUp,
+    ShieldCheck,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useUserRole } from '@/hooks/use-user-role'
 
 const navItems = [
     { href: '/summary', icon: LayoutDashboard, label: 'Dashboard' },
@@ -21,6 +23,7 @@ const navItems = [
     { href: '/risks', icon: AlertTriangle, label: 'Riesgos' },
     { href: '/analyzer', icon: BarChart3, label: 'Analizador' },
     { href: '/upload', icon: Upload, label: 'Cargar Datos' },
+    { href: '/admin/users', icon: ShieldCheck, label: 'Usuarios' },
 ]
 
 export function Sidebar() {
@@ -28,6 +31,31 @@ export function Sidebar() {
     const router = useRouter()
     const supabase = createClient()
     const [collapsed, setCollapsed] = useState(false)
+    const { role, loading } = useUserRole()
+
+    const filteredNavItems = navItems.filter(item => {
+        if (loading) return false;
+
+        // Hide Admin items from non-admins
+        // Hide Admin items from non-admins
+        if (item.href.startsWith('/admin') && role !== 'admin') {
+            return false;
+        }
+
+        if (!role || role === 'admin') return true;
+
+        if (role === 'commercial') {
+            // Commercial cannot see Analyzer
+            return item.href !== '/analyzer';
+        }
+
+        if (role === 'supervisor') {
+            // Supervisor cannot see Upload
+            return item.href !== '/upload';
+        }
+
+        return true;
+    })
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
@@ -52,6 +80,8 @@ export function Sidebar() {
                                 Sales Pulse
                             </h1>
                             <p className="text-slate-500 text-xs">Forecast 2026</p>
+                            <p className="text-amber-500 text-[10px]">Rol: {loading ? '...' : (role || 'Sin rol')}</p>
+                            {/* <p className="text-xs text-slate-600 truncate w-32">ID: {supabase.auth.getUser().then(u=>u.data.user?.id.slice(0,8))}</p> cannot do async in render. */}
                         </div>
                     )}
                 </Link>
@@ -59,7 +89,7 @@ export function Sidebar() {
 
             {/* Navigation */}
             <nav className="flex-1 py-6 px-3 space-y-2">
-                {navItems.map((item) => {
+                {filteredNavItems.map((item) => {
                     const isActive = pathname.startsWith(item.href)
                     return (
                         <Link
