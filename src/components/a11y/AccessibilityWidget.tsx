@@ -118,6 +118,7 @@ export default function AccessibilityWidget() {
                 onClick={toggleWidget}
                 aria-label="Abrir menú de accesibilidad"
                 aria-expanded={isOpen}
+                data-a11y-ignore="true"
             >
                 {isOpen ? <X size={28} /> : <Accessibility size={28} />}
             </motion.button>
@@ -145,6 +146,7 @@ export default function AccessibilityWidget() {
                             role="dialog"
                             aria-modal="true"
                             aria-label="Herramientas de Accesibilidad"
+                            data-a11y-ignore="true"
                         >
                             <div className="p-6 space-y-6">
                                 <div className="flex items-center justify-between pb-4 border-b border-slate-700">

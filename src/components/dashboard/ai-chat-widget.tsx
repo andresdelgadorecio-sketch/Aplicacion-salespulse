@@ -107,7 +107,7 @@ export function AIChatWidget() {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-6 right-6 h-14 w-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-50 group border border-indigo-400/50"
+                    className="fixed bottom-4 right-4 md:bottom-6 md:right-6 h-14 w-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-50 group border border-indigo-400/50"
                 >
                     <Sparkles className="h-6 w-6 animate-pulse absolute opacity-50" />
                     <MessageSquare className="h-6 w-6 relative z-10" />
@@ -117,7 +117,7 @@ export function AIChatWidget() {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 w-[380px] h-[600px] max-h-[80vh] bg-slate-950/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+                <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-[calc(100vw-2rem)] sm:w-[380px] h-[600px] max-h-[85vh] bg-slate-950/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
 
                     {/* Header */}
                     <div className="p-4 bg-gradient-to-r from-indigo-900/50 to-slate-900 border-b border-slate-800 flex items-center justify-between">

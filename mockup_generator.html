@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Mockup iPhone - Sales Pulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            /* Slate 900 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Based on iPhone 14 Pro Bezel */
+        .phone-frame {
+            position: relative;
+            width: 380px;
+            height: 780px;
+            background: #000;
+            border-radius: 50px;
+            border: 8px solid #2d2d2d;
+            /* Dark gray bezel */
+            box-shadow:
+                0 0 0 2px #444,
+                /* Outer thin silver */
+                0 30px 60px -10px rgba(0, 0, 0, 0.9),
+                0 0 100px rgba(59, 130, 246, 0.1);
+            /* Subtle blue glow */
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .phone-frame:hover {
+            transform: scale(1.02);
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            background-color: #020617;
+            background-image: radial-gradient(circle at top right, #1e1b4b, #020617 70%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dynamic-island {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: black;
+            border-radius: 20px;
+            z-index: 50;
+        }
+
+        /* Drop Area Styles */
+        #drop-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        #drop-area.drag-over {
+            background-color: rgba(59, 130, 246, 0.2);
+            border: 4px dashed #3b82f6;
+        }
+
+        #preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top left;
+            display: none;
+            z-index: 5;
+        }
+
+        .instruction-text {
+            color: white;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone-frame">
+        <div class="dynamic-island"></div>
+        <div class="screen-content">
+            <img id="preview-img" alt="Dashboard Preview">
+
+            <div id="drop-area">
+                <div class="instruction-text">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-blue-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                        </path>
+                    </svg>
+                    <h2 class="text-xl font-bold mb-2">Arrastra tu imagen aquí</h2>
+                    <p class="text-gray-400 text-sm">o haz clic para seleccionar</p>
+                </div>
+                <input type="file" id="fileElem" accept="image/*" style="display:none"
+                    onchange="handleFiles(this.files)">
+            </div>
+        </div>
+    </div>
+
+    <button onclick="downloadMockup()">📸 Guardar Mockup</button>
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const fileElem = document.getElementById('fileElem');
+        const previewImg = document.getElementById('preview-img');
+        const instructionText = document.querySelector('.instruction-text');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropArea.classList.add('drag-over');
+        }
+
+        function unhighlight(e) {
+            dropArea.classList.remove('drag-over');
+        }
+
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        dropArea.addEventListener('click', () => {
+            if (previewImg.style.display !== 'block') fileElem.click();
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    instructionText.style.opacity = '0'; // Hide text
+                    dropArea.style.pointerEvents = 'none'; // Disable further clicks on area to allow seeing image
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function downloadMockup() {
+            alert('Para guardar: Presiona "Windows + Shift + S" y selecciona el área del teléfono, o usa la herramienta de Recortes.');
+        }
+    </script>
+
+</body>
+
+</html>
