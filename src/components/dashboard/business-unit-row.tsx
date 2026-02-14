@@ -121,10 +121,10 @@ function BusinessUnitCard({ config, unitKey, sales }: { config: any, unitKey: st
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-[30%_70%] gap-4 items-center mt-4 h-full min-h-[160px]">
+            <div className="flex flex-col md:grid md:grid-cols-[30%_70%] gap-6 md:gap-4 items-center mt-4 h-full min-h-[160px]">
                 {/* Donut */}
                 <div
-                    className="relative h-32 w-full"
+                    className="relative h-48 md:h-32 w-full"
                     onMouseLeave={() => setHoveredData(null)}
                 >
                     {/* Center Label */}
