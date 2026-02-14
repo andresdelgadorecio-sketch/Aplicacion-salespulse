@@ -658,7 +658,7 @@ export default function UploadPage() {
             {/* Upload Type Selection */}
             <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Tipo de Datos</h3>
-                <div className="flex gap-4">
+                <div className="grid grid-cols-2 lg:flex gap-4">
                     <button onClick={() => setUploadType('opportunities')} className={`flex-1 p-4 rounded-xl border-2 transition-all ${uploadType === 'opportunities' ? 'border-indigo-500 bg-indigo-500/20' : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'}`}>
                         <h4 className="font-semibold text-white">Oportunidades</h4>
                     </button>
