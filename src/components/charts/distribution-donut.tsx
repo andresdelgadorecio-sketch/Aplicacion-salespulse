@@ -56,7 +56,7 @@ export function DistributionDonut({
                 <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
             )}
 
-            <div className={`flex flex-1 ${layout === 'vertical' ? 'flex-col items-center justify-center' : 'items-center'} gap-6 min-h-0`}>
+            <div className={`flex flex-1 ${layout === 'vertical' ? 'flex-col items-center justify-center' : 'flex-col md:flex-row items-center'} gap-6 min-h-0`}>
                 {/* Donut Chart */}
                 <div className="relative h-48 w-48 flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">

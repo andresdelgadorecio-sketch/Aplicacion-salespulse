@@ -103,7 +103,7 @@ function DistributionCard({ title, subtitle, data, colors, icon: Icon, type }: a
             </div>
             <p className="text-sm text-slate-400 mb-6">{subtitle}</p>
 
-            <div className="grid grid-cols-[40%_60%] gap-4 items-center h-full">
+            <div className="flex flex-col md:grid md:grid-cols-[40%_60%] gap-6 md:gap-4 items-center h-full">
                 {/* Chart Area */}
                 <div
                     className="relative h-48 w-full"
