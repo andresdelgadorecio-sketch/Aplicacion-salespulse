@@ -50,7 +50,12 @@ export default function VoiceCommandNavigation() {
 
                 setRecognition(recognitionInstance);
             } else {
-                setError("Navegador no soportado");
+                // Check for insecure context (HTTP) which blocks the API
+                if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+                    setError("Requiere HTTPS para voz");
+                } else {
+                    setError("Navegador no soportado");
+                }
             }
         }
     }, []);
