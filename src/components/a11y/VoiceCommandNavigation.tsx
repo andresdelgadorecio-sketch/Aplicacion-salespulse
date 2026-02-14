@@ -102,7 +102,7 @@ export default function VoiceCommandNavigation() {
 
     if (!mounted || !settings.voiceCommands || typeof document === 'undefined') return null;
 
-    if (!recognition && !error) {
+    if (error || !recognition) {
         return null;
     }
 
