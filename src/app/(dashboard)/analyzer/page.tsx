@@ -426,11 +426,13 @@ export default function AnalyzerPage() {
 
             {/* Filters - Lower Z-Index */}
             <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative z-10">
-                <div className="flex items-center gap-4">
-                    <Filter className="h-5 w-5 text-slate-400" />
-                    <span className="text-slate-400 font-medium">Filtrar por País:</span>
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-5 w-5 text-slate-400" />
+                        <span className="text-slate-400 font-medium">Filtrar por País:</span>
+                    </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {countries.map((country) => (
                             <button
                                 key={country}
