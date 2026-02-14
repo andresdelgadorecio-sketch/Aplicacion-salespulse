@@ -112,7 +112,7 @@ export default function AccessibilityWidget() {
         <div className="font-sans text-base antialiased" style={{ zIndex: 20000 }}>
             {/* Floating Trigger Button */}
             <motion.button
-                className="fixed top-6 right-6 z-[20000] p-4 bg-indigo-600 text-white rounded-full shadow-2xl hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-400"
+                className="fixed top-1/2 right-0 transform -translate-y-1/2 z-[20000] p-3 bg-indigo-600 text-white rounded-l-2xl rounded-r-none shadow-[-4px_0_10px_rgba(0,0,0,0.2)] hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-400"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleWidget}
