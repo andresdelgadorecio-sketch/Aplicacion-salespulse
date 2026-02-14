@@ -112,13 +112,12 @@ export default function AccessibilityWidget() {
         <div className="font-sans text-base antialiased" style={{ zIndex: 20000 }}>
             {/* Floating Trigger Button */}
             <motion.button
-                className="fixed top-1/2 right-0 transform -translate-y-1/2 z-[20000] p-3 bg-indigo-600 text-white rounded-l-2xl rounded-r-none shadow-[-4px_0_10px_rgba(0,0,0,0.2)] hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-400"
+                className="fixed top-1/2 right-0 transform -translate-y-1/2 z-[20000] p-3 bg-indigo-600 text-white rounded-l-2xl rounded-r-none shadow-[-4px_0_10px_rgba(0,0,0,0.2)] hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-400 a11y-ignore"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleWidget}
                 aria-label="Abrir menú de accesibilidad"
                 aria-expanded={isOpen}
-                data-a11y-ignore="true"
             >
                 {isOpen ? <X size={28} /> : <Accessibility size={28} />}
             </motion.button>
@@ -142,11 +141,10 @@ export default function AccessibilityWidget() {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="fixed top-0 right-0 h-full w-full max-w-sm bg-slate-900 border-l border-slate-700 shadow-2xl z-[20000] overflow-y-auto"
+                            className="fixed top-0 right-0 h-full w-full max-w-sm bg-slate-900 border-l border-slate-700 shadow-2xl z-[20000] overflow-y-auto a11y-ignore"
                             role="dialog"
                             aria-modal="true"
                             aria-label="Herramientas de Accesibilidad"
-                            data-a11y-ignore="true"
                         >
                             <div className="p-6 space-y-6">
                                 <div className="flex items-center justify-between pb-4 border-b border-slate-700">

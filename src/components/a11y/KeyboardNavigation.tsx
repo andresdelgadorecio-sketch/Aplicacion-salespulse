@@ -31,7 +31,7 @@ export default function KeyboardNavigation() {
             // Visibility check
             if (el.offsetWidth <= 0 && el.offsetHeight <= 0) return false;
             if (window.getComputedStyle(el).visibility === 'hidden') return false;
-            if (el.closest('[data-a11y-ignore="true"]')) return false;
+            if (el.closest('.a11y-ignore')) return false;
             if (el.closest('[aria-hidden="true"]')) return false;
 
             return true;
@@ -125,8 +125,7 @@ export default function KeyboardNavigation() {
 
     return createPortal(
         <div
-            className="fixed bottom-0 left-0 w-full bg-red-600 p-2 sm:p-4 z-[10001] shadow-[0_-4px_20px_rgba(0,0,0,0.3)] border-t-4 border-white flex flex-wrap justify-center items-center gap-4"
-            data-a11y-ignore="true"
+            className="fixed bottom-0 left-0 w-full bg-red-600 p-2 sm:p-4 z-[10001] shadow-[0_-4px_20px_rgba(0,0,0,0.3)] border-t-4 border-white flex flex-wrap justify-center items-center gap-4 a11y-ignore"
         >
             <div className="absolute top-[-24px] left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-t-lg font-bold text-sm border-t border-x border-white whitespace-nowrap z-50">
                 Navegación ({currentIndex + 1} / {focusableElements.length})

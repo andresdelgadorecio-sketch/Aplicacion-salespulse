@@ -82,7 +82,7 @@ export default function ScreenReader() {
             if (!settings.screenReader) return;
 
             // Don't read if clicking inside the widget itself
-            if ((e.target as HTMLElement).closest('[data-a11y-ignore]')) return;
+            if ((e.target as HTMLElement).closest('.a11y-ignore')) return;
 
             const target = e.target as HTMLElement;
 
@@ -112,8 +112,7 @@ export default function ScreenReader() {
 
     return createPortal(
         <div
-            className="fixed bottom-24 right-6 bg-black text-white p-4 rounded-xl shadow-2xl z-[20003] w-64 border-2 border-white"
-            data-a11y-ignore="true"
+            className="fixed bottom-24 right-6 bg-black text-white p-4 rounded-xl shadow-2xl z-[20003] w-64 border-2 border-white a11y-ignore"
         >
             <div className="flex justify-between items-start mb-2">
                 <h3 className="font-bold flex items-center gap-2">
