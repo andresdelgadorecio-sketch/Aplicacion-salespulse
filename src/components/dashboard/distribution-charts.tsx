@@ -92,7 +92,7 @@ function DistributionCard({ title, subtitle, data, colors, icon: Icon, type }: a
     }))
 
     return (
-        <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[320px]">
+        <div className="backdrop-blur-xl bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 relative flex flex-col justify-between min-h-[320px]">
             {/* Header */}
             <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ function DistributionCard({ title, subtitle, data, colors, icon: Icon, type }: a
             <div className="flex flex-col md:grid md:grid-cols-[40%_60%] gap-6 md:gap-4 items-center h-full">
                 {/* Chart Area */}
                 <div
-                    className="relative h-48 w-full"
+                    className="relative h-56 w-full"
                     onMouseLeave={() => setHoveredData(null)}
                 >
                     {/* Fixed Tooltip - Bottom Right of Container (Absolute to Card) */}
