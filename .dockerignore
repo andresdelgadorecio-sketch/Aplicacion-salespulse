@@ -1,0 +1,13 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.gitignore
+.vercel
+# Keep specific env for build if needed, but secrets should be injected at runtime
+.env*.local
+.env
+.DS_Store
